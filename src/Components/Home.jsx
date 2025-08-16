@@ -6,52 +6,55 @@ export const Todocontext = createContext();
 function Home() {
   const [val, setVal] = useState("");
   const [todo, setTodo] = useState([]);
-  const [editId, setEditId] = useState(null);  
+  const [editId, setEditId] = useState(null);
 
-  const handleAddOrUpdate = () => {
-    if (val.trim() === "") return;
+  function handleAddOrUpdate() {
+    if (val === "") return;
 
-    if (editId) {
-      setTodo(
-        todo.map((item) =>
-          item.id === editId ? { ...item, title: val } : item
-        )
-      );
-      setEditId(null);
+    if (editId === null) {
+      const newTodo = { id: Date.now(), title: val };
+      setTodo([...todo, newTodo]);
     } else {
-     
-      const result = { id: crypto.randomUUID(), title: val };
-      setTodo([...todo, result]);
+      const updated = todo.map(item => {
+        if (item.id === editId) {
+          return { ...item, title: val };
+        }
+        return item;
+      });
+      setTodo(updated);
+      setEditId(null);
     }
-    setVal(""); 
-  };
+    setVal("");
+  }
 
-  const handleDelete = (id) => {
-    setTodo(todo.filter((item) => item.id !== id));
+  function handleDelete(id) {
+    const filtered = todo.filter(item => item.id !== id);
+    setTodo(filtered);
     if (editId === id) {
       setEditId(null);
       setVal("");
     }
-  };
+  }
 
-  const handleEdit = (id) => {
-    const editItem = todo.find((item) => item.id === id);
-    if (!editItem) return;
-    setVal(editItem.title);
-    setEditId(id);
-  };
+  function handleEdit(id) {
+    const item = todo.find(item => item.id === id);
+    if (item) {
+      setVal(item.title);
+      setEditId(id);
+    }
+  }
 
   return (
     <div>
       <h1>Todos</h1>
       <input
         type="text"
-        placeholder="Enter todo"
         value={val}
-        onChange={(e) => setVal(e.target.value)}
+        onChange={e => setVal(e.target.value)}
+        placeholder="Enter todo"
       />
       <button onClick={handleAddOrUpdate}>
-        {editId ? "Update" : "Add"}
+        {editId === null ? "Add" : "Update"}
       </button>
 
       <Todocontext.Provider value={{ todo, handleDelete, handleEdit }}>
